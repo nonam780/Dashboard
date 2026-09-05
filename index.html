@@ -16,7 +16,6 @@
 </head>
 <body class="bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 text-gray-800 h-screen overflow-hidden flex flex-col">
 
-  <!-- CONFIG: GANTI DENGAN URL WEB APP GAS KAMU -->
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0a8QRZ1PurkS9pW7BBNpMGRqchpscMCbKZ_uwCZQzMSkkClsOoU7BvvdcmoHRlxOhwA/exec";
   </script>
@@ -115,6 +114,9 @@
               <option value="ALL">Semua Quartal</option>
             </select>
           </div>
+          <button onclick="openProjectModal()" class="w-full md:w-auto bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md shadow-pink-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> Tambah Project Baru
+          </button>
         </div>
 
         <div class="bg-white/90 backdrop-blur-md rounded-2xl border border-pink-200 shadow-xl overflow-hidden flex-1 flex flex-col min-h-0">
@@ -131,6 +133,7 @@
                   <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Rilis</th>
                   <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Bugs</th>
                   <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Quartal</th>
+                  <th class="py-3 px-4 text-center whitespace-nowrap bg-pink-100">Aksi</th>
                 </tr>
               </thead>
               <tbody id="projectTableBody" class="divide-y divide-pink-100/60"></tbody>
@@ -185,6 +188,9 @@
               <option value="2027">2027</option>
             </select>
           </div>
+          <button onclick="openReworkModal()" class="w-full md:w-auto bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md shadow-pink-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> Tambah Rework Baru
+          </button>
         </div>
 
         <div class="bg-white/90 backdrop-blur-md rounded-2xl border border-pink-200 shadow-xl overflow-hidden flex-1 flex flex-col min-h-0">
@@ -197,6 +203,7 @@
                   <th class="py-3 px-3 text-center bg-pink-100">Kategori</th>
                   <th class="py-3 px-4 text-center bg-pink-100">Note</th>
                   <th class="py-3 px-4 text-center bg-pink-100">PIC</th>
+                  <th class="py-3 px-4 text-center bg-pink-100">Aksi</th>
                 </tr>
               </thead>
               <tbody id="reworkTableBody" class="divide-y divide-pink-100/60"></tbody>
@@ -207,7 +214,140 @@
     </main>
   </div>
 
+  <!-- MODAL PROJECT -->
+  <div id="modalProject" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-xl shadow-2xl border border-pink-200 my-8">
+      <div class="flex justify-between items-center mb-6 border-b border-pink-100 pb-3">
+        <h3 id="modalProjectTitle" class="text-lg font-extrabold text-pink-600">Tambah Project Baru</h3>
+        <button onclick="closeProjectModal()" class="text-gray-400 hover:text-pink-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="formProject" onsubmit="handleSaveProject(event)" class="space-y-4">
+        <input type="hidden" id="projRowIndex">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="col-span-2">
+            <label class="text-xs font-bold text-gray-700">Nama Project *</label>
+            <input type="text" id="projName" required class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">SA *</label>
+            <select id="projSa" required class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-bold focus:border-pink-500 uppercase">
+              <option value="">-- Pilih SA --</option>
+              <option value="EKA">EKA</option><option value="JUBAY">JUBAY</option><option value="KARINA">KARINA</option><option value="LALA">LALA</option>
+            </select>
+          </div>
+          <div class="relative">
+            <label class="text-xs font-bold text-gray-700">Programmer *</label>
+            <div id="progChipsContainer" class="flex flex-wrap gap-1 mb-1"></div>
+            <input type="text" id="projProgInput" placeholder="Ketik minimal 3 huruf..." autocomplete="off" class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-semibold focus:border-pink-500 focus:outline-none uppercase">
+            <div id="progSuggestions" class="absolute z-20 w-full bg-white border border-pink-200 rounded-xl shadow-xl mt-1 hidden max-h-40 overflow-y-auto"></div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">QA</label>
+            <input type="text" value="NURUL" disabled class="w-full px-3 py-2 border rounded-xl border-pink-100 bg-pink-50/50 text-xs text-pink-600 font-bold cursor-not-allowed">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">Quartal *</label>
+            <div class="flex gap-2">
+              <select id="projQuartalQ" required class="w-1/2 px-2 py-2 border rounded-xl border-pink-200 text-xs font-semibold focus:border-pink-500">
+                <option value="Q1">Q1</option><option value="Q2">Q2</option><option value="Q3">Q3</option><option value="Q4">Q4</option>
+              </select>
+              <select id="projQuartalYear" required class="w-1/2 px-2 py-2 border rounded-xl border-pink-200 text-xs font-semibold focus:border-pink-500">
+                <option value="25">25</option><option value="26">26</option><option value="27">27</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-pink-100 pt-3 grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-gray-700">Max Integration</label>
+            <input type="date" id="projMaxIntegration" onchange="validateProjectDates()" class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">Act Finish Integration</label>
+            <input type="date" id="projActFinishIntegration" onchange="validateProjectDates()" disabled class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">UAT 1</label>
+            <input type="date" id="projUat1" onchange="validateProjectDates()" disabled class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">Opsi UAT 2?</label>
+            <select id="projHasUat2" onchange="validateProjectDates()" disabled class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-semibold focus:border-pink-500 disabled:bg-gray-100 disabled:cursor-not-allowed">
+              <option value="false">Tidak Ada</option><option value="true">Ada UAT 2</option>
+            </select>
+          </div>
+          <div id="wrapperUat2" class="hidden">
+            <label class="text-xs font-bold text-gray-700">UAT 2</label>
+            <input type="date" id="projUat2" onchange="validateProjectDates()" disabled class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-700">Rilis</label>
+            <input type="date" id="projRilis" disabled class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed">
+          </div>
+        </div>
+
+        <div class="border-t border-pink-100 pt-3">
+          <label class="text-xs font-bold text-gray-700 block mb-1">List Bugs (URL)</label>
+          <input type="url" id="projListBugsLink" placeholder="https://..." class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs focus:border-pink-500 focus:outline-none">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="closeProjectModal()" class="px-4 py-2 border border-pink-200 text-gray-500 text-xs font-bold rounded-xl hover:bg-pink-50">Batal</button>
+          <button type="submit" id="btnSubmitProject" class="px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold rounded-xl shadow-md">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL REWORK -->
+  <div id="modalRework" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden p-4">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-pink-200">
+      <div class="flex justify-between items-center mb-6 border-b border-pink-100 pb-3">
+        <h3 id="modalReworkTitle" class="text-lg font-extrabold text-pink-600">Tambah Rework Baru</h3>
+        <button onclick="closeReworkModal()" class="text-gray-400 hover:text-pink-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="formRework" onsubmit="handleSaveRework(event)" class="space-y-4">
+        <input type="hidden" id="reworkRowIndex">
+        <div>
+          <label class="text-xs font-bold text-gray-700">Tanggal *</label>
+          <input type="date" id="reworkTanggal" required class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-700">SSID (Angka Saja) *</label>
+          <input type="text" id="reworkSsid" required inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="Contoh: 123456" class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-700">Kategori *</label>
+          <select id="reworkKategori" required class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-semibold focus:border-pink-500">
+            <option value="RSD">RSD</option><option value="SRS">SRS</option><option value="DFD">DFD</option><option value="Modul">Modul</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-700">Note *</label>
+          <textarea id="reworkNote" required rows="3" class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-medium focus:border-pink-500 focus:outline-none"></textarea>
+        </div>
+        <div class="relative">
+          <label class="text-xs font-bold text-gray-700">PIC *</label>
+          <input type="text" id="reworkPicInput" required placeholder="Ketik minimal 3 huruf..." autocomplete="off" class="w-full px-3 py-2 border rounded-xl border-pink-200 text-xs font-bold focus:border-pink-500 focus:outline-none uppercase">
+          <div id="picSuggestions" class="absolute z-20 w-full bg-white border border-pink-200 rounded-xl shadow-xl mt-1 hidden max-h-40 overflow-y-auto"></div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="closeReworkModal()" class="px-4 py-2 border border-pink-200 text-gray-500 text-xs font-bold rounded-xl hover:bg-pink-50">Batal</button>
+          <button type="submit" class="px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold rounded-xl shadow-md">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
+    const PROGRAMMER_OPTIONS = ["DJATI", "WARDAH", "FARIZ", "MANSUR", "LIA", "MIFTAH", "RICKI", "FAIZ", "RAIDHA"];
+    const PIC_OPTIONS = ["EKA", "JUBAY", "KARINA", "LALA", "ERNI", "SALSA", "DJATI", "WARDAH", "MANSUR", "FARIZ", "LIA", "MIFTAH", "RICKI", "FAIZ", "RAIDHA", "NANDA", "RINIA"];
+    
+    let selectedProgrammers = [];
     let rawProjectData = [];
     let rawReworkData = [];
     let activeStatFilter = 'ALL';
@@ -221,10 +361,7 @@
 
     function handleLogin() {
       const pin = document.getElementById('pinInput').value;
-      if (!pin) {
-        showFlyingPopup("Password Masih Kosong");
-        return;
-      }
+      if (!pin) { showFlyingPopup("Password Masih Kosong"); return; }
 
       fetch(`${WEB_APP_URL}?action=verifyPassword&pin=${encodeURIComponent(pin)}`)
         .then(res => res.json())
@@ -237,9 +374,7 @@
             showFlyingPopup("Password Salah Pendek");
           }
         })
-        .catch(err => {
-          showFlyingPopup("Gagal terhubung ke server database!");
-        });
+        .catch(err => { showFlyingPopup("Gagal terhubung ke server database!"); });
     }
 
     function getCurrentQuartalAndYear() {
@@ -256,6 +391,7 @@
     function initData() {
       loadProjectData();
       loadReworkData();
+      setupAutocompleteListeners();
     }
 
     function switchTab(tab) {
@@ -295,6 +431,50 @@
       return 999999;
     }
 
+    function setupAutocompleteListeners() {
+      const progInput = document.getElementById('projProgInput');
+      const progSugg = document.getElementById('progSuggestions');
+      progInput.addEventListener('input', () => {
+        const val = progInput.value.trim().toUpperCase();
+        if (val.length < 3) { progSugg.classList.add('hidden'); return; }
+        const matches = PROGRAMMER_OPTIONS.filter(p => p.includes(val) && !selectedProgrammers.includes(p));
+        if (matches.length === 0) { progSugg.classList.add('hidden'); return; }
+        progSugg.innerHTML = matches.map(m => `<div onclick="addProgrammerChip('${m}')" class="px-3 py-2 text-xs font-bold text-gray-700 hover:bg-pink-100 cursor-pointer">${m}</div>`).join('');
+        progSugg.classList.remove('hidden');
+      });
+
+      const picInput = document.getElementById('reworkPicInput');
+      const picSugg = document.getElementById('picSuggestions');
+      picInput.addEventListener('input', () => {
+        const val = picInput.value.trim().toUpperCase();
+        if (val.length < 3) { picSugg.classList.add('hidden'); return; }
+        const matches = PIC_OPTIONS.filter(p => p.includes(val));
+        if (matches.length === 0) { picSugg.classList.add('hidden'); return; }
+        picSugg.innerHTML = matches.map(m => `<div onclick="selectPicValue('${m}')" class="px-3 py-2 text-xs font-bold text-gray-700 hover:bg-pink-100 cursor-pointer">${m}</div>`).join('');
+        picSugg.classList.remove('hidden');
+      });
+    }
+
+    function addProgrammerChip(name) {
+      if (!selectedProgrammers.includes(name)) { selectedProgrammers.push(name); renderProgrammerChips(); }
+      document.getElementById('projProgInput').value = '';
+      document.getElementById('progSuggestions').classList.add('hidden');
+    }
+    function removeProgrammerChip(name) {
+      selectedProgrammers = selectedProgrammers.filter(p => p !== name);
+      renderProgrammerChips();
+    }
+    function renderProgrammerChips() {
+      document.getElementById('progChipsContainer').innerHTML = selectedProgrammers.map(p => `
+        <span class="inline-flex items-center gap-1 bg-pink-100 text-pink-700 px-2 py-0.5 rounded-md text-xs font-bold border border-pink-200">
+          ${p} <i onclick="removeProgrammerChip('${p}')" class="fa-solid fa-xmark text-[10px] cursor-pointer hover:text-red-600"></i>
+        </span>`).join('');
+    }
+    function selectPicValue(name) {
+      document.getElementById('reworkPicInput').value = name;
+      document.getElementById('picSuggestions').classList.add('hidden');
+    }
+
     function loadProjectData() {
       fetch(`${WEB_APP_URL}?action=getProjectData`)
         .then(res => res.json())
@@ -304,8 +484,7 @@
           updateProjectStats();
           updateActiveCardVisual();
           renderProjectGrid();
-        })
-        .catch(err => console.error("Gagal load project:", err));
+        });
     }
 
     function populateQuartalFilterOptions() {
@@ -314,7 +493,6 @@
       let uniqueQuartals = [...new Set(rawProjectData.map(p => p.quartal).filter(Boolean))];
       if (!uniqueQuartals.includes(currentQuartal)) uniqueQuartals.push(currentQuartal);
       uniqueQuartals.sort((a, b) => parseQuartalValue(a) - parseQuartalValue(b));
-
       qSelect.innerHTML = `<option value="ALL">Semua Quartal</option>`;
       uniqueQuartals.forEach(q => { qSelect.innerHTML += `<option value="${q}">${q}</option>`; });
       qSelect.value = currentQuartal;
@@ -331,10 +509,7 @@
 
     function updateProjectStats() {
       let stats = { ALL: rawProjectData.length, ON_PROGRESS: 0, INTEGRATION: 0, BELUM_UAT1: 0, BELUM_UAT2: 0, BELUM_RILIS: 0, FINISH: 0 };
-      rawProjectData.forEach(p => {
-        const st = getProjectStatus(p);
-        if (stats[st] !== undefined) stats[st]++;
-      });
+      rawProjectData.forEach(p => { const st = getProjectStatus(p); if (stats[st] !== undefined) stats[st]++; });
       document.getElementById('statTotal').innerText = stats.ALL;
       document.getElementById('statOnProgress').innerText = stats.ON_PROGRESS;
       document.getElementById('statIntegration').innerText = stats.INTEGRATION;
@@ -352,32 +527,21 @@
 
     function updateActiveCardVisual() {
       const cards = {
-        'ALL': document.querySelector('.card-total'),
-        'ON_PROGRESS': document.querySelector('.card-progress'),
-        'INTEGRATION': document.querySelector('.card-integration'),
-        'BELUM_UAT1': document.querySelector('.card-uat1'),
-        'BELUM_UAT2': document.querySelector('.card-uat2'),
-        'BELUM_RILIS': document.querySelector('.card-rilis'),
-        'FINISH': document.querySelector('.card-finish')
+        'ALL': document.querySelector('.card-total'), 'ON_PROGRESS': document.querySelector('.card-progress'),
+        'INTEGRATION': document.querySelector('.card-integration'), 'BELUM_UAT1': document.querySelector('.card-uat1'),
+        'BELUM_UAT2': document.querySelector('.card-uat2'), 'BELUM_RILIS': document.querySelector('.card-rilis'), 'FINISH': document.querySelector('.card-finish')
       };
       Object.keys(cards).forEach(key => {
         const cardEl = cards[key];
         if (!cardEl) return;
-        if (activeStatFilter === key) {
-          cardEl.classList.add('active-card');
-          cardEl.classList.remove('card-inactive');
-        } else {
-          cardEl.classList.remove('active-card');
-          if (activeStatFilter !== 'ALL') cardEl.classList.add('card-inactive');
-          else cardEl.classList.remove('card-inactive');
-        }
+        if (activeStatFilter === key) { cardEl.classList.add('active-card'); cardEl.classList.remove('card-inactive'); }
+        else { cardEl.classList.remove('active-card'); if (activeStatFilter !== 'ALL') cardEl.classList.add('card-inactive'); else cardEl.classList.remove('card-inactive'); }
       });
     }
 
     function renderProjectGrid() {
       const search = document.getElementById('searchProject').value.toLowerCase();
       const qFilter = document.getElementById('filterQuartal').value;
-
       let filtered = rawProjectData.filter(p => {
         const matchesSearch = p.projectName.toLowerCase().includes(search) || p.sa.toLowerCase().includes(search) || p.programmer.toLowerCase().includes(search);
         const matchesQ = qFilter === 'ALL' || p.quartal === qFilter;
@@ -385,27 +549,12 @@
         return matchesSearch && matchesQ && matchesStat;
       });
 
-      const todayObj = new Date();
-      const today = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
-
-      filtered.sort((a, b) => {
-        if (qFilter === 'ALL') {
-          const qValA = parseQuartalValue(a.quartal);
-          const qValB = parseQuartalValue(b.quartal);
-          if (qValA !== qValB) return qValA - qValB;
-        }
-        const order = { 'INTEGRATION': 1, 'BELUM_UAT1': 2, 'BELUM_UAT2': 2, 'BELUM_RILIS': 3, 'ON_PROGRESS': 4, 'FINISH': 5 };
-        const stA = getProjectStatus(a);
-        const stB = getProjectStatus(b);
-        if (order[stA] !== order[stB]) return order[stA] - order[stB];
-        return 0;
-      });
-
+      const today = new Date();
       const tbody = document.getElementById('projectTableBody');
       tbody.innerHTML = '';
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-gray-400 font-semibold"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> Tidak ada data project.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="py-10 text-center text-gray-400 font-semibold"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> Tidak ada data project.</td></tr>`;
         return;
       }
 
@@ -421,50 +570,146 @@
 
         let actFinishCellHtml = displayDate(p.actFinishIntegration);
         if (status === 'INTEGRATION' && !p.actFinishIntegration && p.maxIntegration) {
-          const maxD = parseLocalDate(p.maxIntegration);
-          const diff = Math.round((maxD - today) / (1000 * 60 * 60 * 24));
-          actFinishCellHtml = diff < 0 ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-100 px-2 py-1 rounded border border-red-200 blink-status inline-block">Overdue ${Math.abs(diff)} hr</span>` : `<span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200 blink-status inline-block">Sisa ${diff} hr</span>`;
+          const diff = Math.round((parseLocalDate(p.maxIntegration) - today) / (1000 * 60 * 60 * 24));
+          actFinishCellHtml = diff < 0 ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-100 px-2 py-1 rounded border border-red-200 blink-status">Overdue ${Math.abs(diff)} hr</span>` : `<span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200 blink-status">Sisa ${diff} hr</span>`;
         }
 
         let uat1CellHtml = displayDate(p.uat1);
         if (status === 'BELUM_UAT1' && !p.uat1 && p.actFinishIntegration) {
           const passDays = Math.round((today - parseLocalDate(p.actFinishIntegration)) / (1000 * 60 * 60 * 24));
-          uat1CellHtml = `<span class="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200 blink-status inline-block">${Math.abs(passDays)} hr</span>`;
+          uat1CellHtml = `<span class="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200 blink-status">${Math.abs(passDays)} hr</span>`;
         }
 
-        let uat2CellHtml = p.hasUat2 ? displayDate(p.uat2) : '<span class="text-gray-300 font-normal">N/A</span>';
+        let uat2CellHtml = p.hasUat2 ? displayDate(p.uat2) : '<span class="text-gray-300">N/A</span>';
         if (status === 'BELUM_UAT2' && p.hasUat2 && !p.uat2 && p.uat1) {
           const passDays = Math.round((today - parseLocalDate(p.uat1)) / (1000 * 60 * 60 * 24));
-          uat2CellHtml = `<span class="text-[10px] font-extrabold text-orange-700 bg-orange-50 px-2 py-1 rounded border border-orange-200 blink-status inline-block">${Math.abs(passDays)} hr</span>`;
+          uat2CellHtml = `<span class="text-[10px] font-extrabold text-orange-700 bg-orange-50 px-2 py-1 rounded border border-orange-200 blink-status">${Math.abs(passDays)} hr</span>`;
         }
 
-        const bugDisplay = p.listBugs ? `<a href="${p.listBugs}" target="_blank" class="w-7 h-7 inline-flex items-center justify-center text-pink-600 bg-pink-100 hover:bg-pink-500 hover:text-white rounded-full transition-all shadow-xs" title="Buka Bugs Link"><i class="fa-solid fa-bug text-xs"></i></a>` : '<span class="text-gray-300">-</span>';
+        const bugDisplay = p.listBugs ? `<a href="${p.listBugs}" target="_blank" class="w-7 h-7 inline-flex items-center justify-center text-pink-600 bg-pink-100 hover:bg-pink-500 hover:text-white rounded-full transition shadow-xs"><i class="fa-solid fa-bug text-xs"></i></a>` : '<span class="text-gray-300">-</span>';
 
         tbody.innerHTML += `
           <tr class="hover:bg-pink-100/40 transition-all">
             <td class="py-3 px-4 text-left">
               <div class="font-black text-gray-900 text-sm tracking-tight mb-1.5">${p.projectName}</div>
               <div class="text-[11px] text-gray-600 flex items-center gap-1.5 flex-wrap font-medium uppercase">
-                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200/80">SA: <strong class="text-gray-800 font-bold">${p.sa}</strong></span>
-                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200/80">Prog: <strong class="text-gray-800 font-bold">${p.programmer}</strong></span>
-                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200/80">QA: <strong class="text-pink-600 font-bold">${p.qa}</strong></span>
+                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200">SA: <b>${p.sa}</b></span>
+                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200">Prog: <b>${p.programmer}</b></span>
+                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200">QA: <b class="text-pink-600">${p.qa}</b></span>
               </div>
             </td>
-            <td class="py-3 px-3 text-center whitespace-nowrap">${badgeHtml}</td>
-            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${displayDate(p.maxIntegration)}</td>
-            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${actFinishCellHtml}</td>
-            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${uat1CellHtml}</td>
-            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${uat2CellHtml}</td>
-            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${displayDate(p.rilis)}</td>
-            <td class="py-3 px-3 text-center whitespace-nowrap">${bugDisplay}</td>
-            <td class="py-3 px-3 text-center whitespace-nowrap">
-              <span class="font-extrabold text-[11px] text-pink-600 bg-pink-100 px-2.5 py-0.5 rounded-lg border border-pink-200/80 shadow-xs inline-block">${p.quartal}</span>
+            <td class="py-3 px-3 text-center">${badgeHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center">${displayDate(p.maxIntegration)}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center">${actFinishCellHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center">${uat1CellHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center">${uat2CellHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center">${displayDate(p.rilis)}</td>
+            <td class="py-3 px-3 text-center">${bugDisplay}</td>
+            <td class="py-3 px-3 text-center"><span class="font-extrabold text-[11px] text-pink-600 bg-pink-100 px-2.5 py-0.5 rounded-lg border border-pink-200">${p.quartal}</span></td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="editProject(${p.rowIndex})" class="w-7 h-7 inline-flex items-center justify-center text-pink-600 hover:bg-pink-200 bg-pink-100 rounded-lg transition"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
             </td>
           </tr>
         `;
       });
     }
 
+    function openProjectModal() {
+      document.getElementById('formProject').reset();
+      document.getElementById('projRowIndex').value = '';
+      document.getElementById('modalProjectTitle').innerText = 'Tambah Project Baru';
+      selectedProgrammers = [];
+      renderProgrammerChips();
+      const cur = getCurrentQuartalAndYear();
+      document.getElementById('projQuartalQ').value = cur.q;
+      document.getElementById('projQuartalYear').value = cur.year;
+      validateProjectDates();
+      document.getElementById('modalProject').classList.remove('hidden');
+    }
+    function closeProjectModal() { document.getElementById('modalProject').classList.add('hidden'); }
+
+    function editProject(rowIndex) {
+      const p = rawProjectData.find(item => item.rowIndex === rowIndex);
+      if (!p) return;
+      document.getElementById('projRowIndex').value = p.rowIndex;
+      document.getElementById('projName').value = p.projectName;
+      document.getElementById('projSa').value = p.sa.toUpperCase();
+      selectedProgrammers = p.programmer ? p.programmer.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
+      renderProgrammerChips();
+      const qParts = p.quartal.split('-');
+      if (qParts.length === 2) { document.getElementById('projQuartalQ').value = qParts[0]; document.getElementById('projQuartalYear').value = qParts[1]; }
+      document.getElementById('projMaxIntegration').value = p.maxIntegration;
+      document.getElementById('projActFinishIntegration').value = p.actFinishIntegration;
+      document.getElementById('projUat1').value = p.uat1;
+      document.getElementById('projHasUat2').value = p.hasUat2 ? 'true' : 'false';
+      document.getElementById('projUat2').value = p.uat2;
+      document.getElementById('projRilis').value = p.rilis;
+      document.getElementById('projListBugsLink').value = p.listBugs;
+      document.getElementById('modalProjectTitle').innerText = 'Edit Project';
+      validateProjectDates();
+      document.getElementById('modalProject').classList.remove('hidden');
+    }
+
+    function validateProjectDates() {
+      const maxInt = document.getElementById('projMaxIntegration').value;
+      const actFinish = document.getElementById('projActFinishIntegration');
+      const uat1 = document.getElementById('projUat1');
+      const hasUat2Select = document.getElementById('projHasUat2');
+      const uat2 = document.getElementById('projUat2');
+      const wrapperUat2 = document.getElementById('wrapperUat2');
+      const rilis = document.getElementById('projRilis');
+
+      actFinish.disabled = !maxInt; if (!maxInt) actFinish.value = '';
+      uat1.disabled = !actFinish.value; if (!actFinish.value) uat1.value = '';
+      hasUat2Select.disabled = !uat1.value; if (!uat1.value) hasUat2Select.value = 'false';
+
+      const isHasUat2 = hasUat2Select.value === 'true';
+      if (isHasUat2 && !hasUat2Select.disabled) {
+        wrapperUat2.classList.remove('hidden');
+        uat2.disabled = !uat1.value;
+      } else {
+        wrapperUat2.classList.add('hidden');
+        uat2.value = '';
+      }
+      rilis.disabled = !(uat1.value && (!isHasUat2 || uat2.value));
+      if (rilis.disabled) rilis.value = '';
+    }
+
+    function handleSaveProject(e) {
+      e.preventDefault();
+      if (selectedProgrammers.length === 0) { alert("Pilih minimal 1 Programmer!"); return; }
+      const btn = document.getElementById('btnSubmitProject');
+      btn.innerText = "Menyimpan..."; btn.disabled = true;
+
+      const form = {
+        rowIndex: document.getElementById('projRowIndex').value,
+        projectName: document.getElementById('projName').value,
+        sa: document.getElementById('projSa').value.toUpperCase(),
+        programmer: selectedProgrammers.join(', ').toUpperCase(),
+        quartalQ: document.getElementById('projQuartalQ').value,
+        quartalYear: document.getElementById('projQuartalYear').value,
+        maxIntegration: document.getElementById('projMaxIntegration').value,
+        actFinishIntegration: document.getElementById('projActFinishIntegration').value,
+        uat1: document.getElementById('projUat1').value,
+        hasUat2: document.getElementById('projHasUat2').value,
+        uat2: document.getElementById('projUat2').value,
+        rilis: document.getElementById('projRilis').value,
+        listBugsLink: document.getElementById('projListBugsLink').value
+      };
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveProject', form: form })
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.innerText = "Simpan Data"; btn.disabled = false;
+        if (res.success) { closeProjectModal(); loadProjectData(); }
+        else { alert("Gagal menyimpan: " + res.error); }
+      });
+    }
+
+    // --- REWORK FUNCTIONS ---
     function loadReworkData() {
       fetch(`${WEB_APP_URL}?action=getReworkData`)
         .then(res => res.json())
@@ -472,8 +717,7 @@
           rawReworkData = data;
           updateReworkStats();
           renderReworkGrid();
-        })
-        .catch(err => console.error("Gagal load rework:", err));
+        });
     }
 
     function updateReworkStats() {
@@ -496,8 +740,7 @@
         let matchesSem = true;
         if (r.tanggal && sem !== 'ALL') {
           const month = parseLocalDate(r.tanggal).getMonth() + 1;
-          if (sem === 'S1') matchesSem = month >= 1 && month <= 6;
-          if (sem === 'S2') matchesSem = month >= 7 && month <= 12;
+          matchesSem = (sem === 'S1') ? (month >= 1 && month <= 6) : (month >= 7 && month <= 12);
         }
         let matchesYr = true;
         if (r.tanggal && yr !== 'ALL') matchesYr = parseLocalDate(r.tanggal).getFullYear().toString() === yr;
@@ -508,7 +751,7 @@
       tbody.innerHTML = '';
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-400 font-semibold"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> Tidak ada data rework.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-400 font-semibold"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> Tidak ada data rework.</td></tr>`;
         return;
       }
 
@@ -517,13 +760,57 @@
           <tr class="hover:bg-pink-100/40 transition-all">
             <td class="py-3 px-4 font-bold text-gray-700 text-center text-xs whitespace-nowrap">${displayDate(r.tanggal)}</td>
             <td class="py-3 px-4 font-extrabold text-pink-600 text-center text-xs whitespace-nowrap">${r.ssid}</td>
-            <td class="py-3 px-3 text-center whitespace-nowrap">
-              <span class="text-[11px] font-black bg-pink-100 text-pink-700 px-3 py-1 rounded-full border border-pink-200 inline-block">${r.kategori}</span>
-            </td>
+            <td class="py-3 px-3 text-center whitespace-nowrap"><span class="text-[11px] font-black bg-pink-100 text-pink-700 px-3 py-1 rounded-full border border-pink-200">${r.kategori}</span></td>
             <td class="py-3 px-4 max-w-xs truncate text-gray-700 font-medium text-center text-xs" title="${r.note}">${r.note}</td>
             <td class="py-3 px-4 font-extrabold text-gray-800 text-center text-xs whitespace-nowrap uppercase">${r.pic}</td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="editRework(${r.rowIndex})" class="w-7 h-7 inline-flex items-center justify-center text-pink-600 hover:bg-pink-200 bg-pink-100 rounded-lg transition"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+            </td>
           </tr>
         `;
+      });
+    }
+
+    function openReworkModal() {
+      document.getElementById('formRework').reset();
+      document.getElementById('reworkRowIndex').value = '';
+      document.getElementById('modalReworkTitle').innerText = 'Tambah Rework Baru';
+      document.getElementById('modalRework').classList.remove('hidden');
+    }
+    function closeReworkModal() { document.getElementById('modalRework').classList.add('hidden'); }
+
+    function editRework(rowIndex) {
+      const r = rawReworkData.find(item => item.rowIndex === rowIndex);
+      if (!r) return;
+      document.getElementById('reworkRowIndex').value = r.rowIndex;
+      document.getElementById('reworkTanggal').value = r.tanggal;
+      document.getElementById('reworkSsid').value = r.ssid;
+      document.getElementById('reworkKategori').value = r.kategori;
+      document.getElementById('reworkNote').value = r.note;
+      document.getElementById('reworkPicInput').value = r.pic.toUpperCase();
+      document.getElementById('modalReworkTitle').innerText = 'Edit Rework';
+      document.getElementById('modalRework').classList.remove('hidden');
+    }
+
+    function handleSaveRework(e) {
+      e.preventDefault();
+      const form = {
+        rowIndex: document.getElementById('reworkRowIndex').value,
+        tanggal: document.getElementById('reworkTanggal').value,
+        ssid: document.getElementById('reworkSsid').value.trim(),
+        kategori: document.getElementById('reworkKategori').value,
+        note: document.getElementById('reworkNote').value,
+        pic: document.getElementById('reworkPicInput').value.trim().toUpperCase()
+      };
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveRework', form: form })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) { closeReworkModal(); loadReworkData(); }
+        else { alert("Gagal menyimpan rework: " + res.error); }
       });
     }
   </script>
