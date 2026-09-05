@@ -1,209 +1,531 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Dashboard Nurul</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <style>
-      @keyframes blink {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.4;
-        }
-      }
-      .blink-status {
-        animation: blink 1.5s infinite;
-      }
-    </style>
-  </head>
-  <body
-    class="bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 text-gray-800 h-screen overflow-hidden flex flex-col"
-  >
-    <!-- URL WEB APP GOOGLE APPS SCRIPT KAMU -->
-    <script>
-      const WEB_APP_URL =
-        "https://script.google.com/macros/s/AKfycbz0a8QRZ1PurkS9pW7BBNpMGRqchpscMCbKZ_uwCZQzMSkkClsOoU7BvvdcmoHRlxOhwA/exec";
-    </script>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Nurul</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .blink-status { animation: blink 1.5s infinite; }
+    .card-summary-item { background: white; border-radius: 1rem; border: 1px solid #fbcfe8; transition: all 0.2s; }
+    .card-summary-item:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(244, 63, 94, 0.1); }
+    .active-card { ring: 2px solid #db2777; border-color: #db2777; background: #fff1f2; }
+    .card-inactive { opacity: 0.5; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 text-gray-800 h-screen overflow-hidden flex flex-col">
 
-    <!-- FLYING POPUP ERROR TOAST -->
-    <div
-      id="flyingPopup"
-      class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden"
-    >
-      <div
-        class="bg-red-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white"
-      >
-        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-        <span id="flyingPopupMsg" class="font-extrabold text-sm tracking-wide"
-          >Password Salah Pendek</span
-        >
-      </div>
+  <!-- CONFIG: GANTI DENGAN URL WEB APP GAS KAMU -->
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0a8QRZ1PurkS9pW7BBNpMGRqchpscMCbKZ_uwCZQzMSkkClsOoU7BvvdcmoHRlxOhwA/exec";
+  </script>
+
+  <!-- FLYING POPUP ERROR TOAST -->
+  <div id="flyingPopup" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden">
+    <div class="bg-red-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white">
+      <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+      <span id="flyingPopupMsg" class="font-extrabold text-sm tracking-wide">Password Salah Pendek</span>
     </div>
+  </div>
 
-    <!-- LOGIN CONTAINER -->
-    <div
-      id="loginSection"
-      class="fixed inset-0 z-40 flex items-center justify-center bg-pink-900/20 backdrop-blur-md"
-    >
-      <div
-        class="bg-white/95 p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-pink-200 text-center relative overflow-hidden"
-      >
-        <div
-          class="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-pink-300"
-        >
-          <i class="fa-solid fa-shield-halved"></i>
+  <!-- LOGIN CONTAINER -->
+  <div id="loginSection" class="fixed inset-0 z-40 flex items-center justify-center bg-pink-900/20 backdrop-blur-md">
+    <div class="bg-white/95 p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-pink-200 text-center relative overflow-hidden">
+      <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-pink-300">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 class="text-2xl font-black text-gray-800 mb-0.5 tracking-tight">DASHBOARD NURUL</h2>
+      <p class="text-xs font-semibold text-gray-400 mb-6">Masukan Password</p>
+      
+      <div class="mb-5">
+        <input type="password" id="pinInput" placeholder="••••" onkeydown="if(event.key === 'Enter') handleLogin()" class="w-full text-center text-2xl font-bold tracking-widest py-3 px-4 rounded-xl border border-pink-200 bg-white focus:outline-none focus:border-pink-500 text-gray-800">
+      </div>
+
+      <button onclick="handleLogin()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-pink-300/50 hover:scale-[1.02]">Masuk Dashboard</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="appSection" class="hidden h-screen w-full flex flex-col md:flex-row overflow-hidden">
+    <!-- SIDEBAR -->
+    <aside class="w-full md:w-64 bg-white/90 backdrop-blur-lg border-r border-pink-200 p-5 flex flex-col shadow-xl h-full overflow-y-auto shrink-0">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-gradient-to-tr from-pink-500 to-rose-500 text-white rounded-2xl flex items-center justify-center text-lg font-black shadow-lg shadow-pink-300">N</div>
+        <div>
+          <h1 class="font-extrabold text-gray-800 text-base leading-none tracking-tight">Dashboard Nurul</h1>
+          <span class="text-[10px] text-pink-600 font-semibold uppercase tracking-wider">Project & Rework</span>
         </div>
-        <h2 class="text-2xl font-black text-gray-800 mb-0.5 tracking-tight">
-          DASHBOARD NURUL
-        </h2>
-        <p class="text-xs font-semibold text-gray-400 mb-6">Masukan Password</p>
-
-        <div class="mb-5">
-          <input
-            type="password"
-            id="pinInput"
-            placeholder="••••"
-            onkeydown="if (event.key === 'Enter') handleLogin();"
-            class="w-full text-center text-2xl font-bold tracking-widest py-3 px-4 rounded-xl border border-pink-200 bg-white focus:outline-none focus:border-pink-500 text-gray-800"
-          />
-        </div>
-
-        <button
-          onclick="handleLogin()"
-          class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-pink-300/50 hover:scale-[1.02]"
-        >
-          Masuk Dashboard
+      </div>
+      <nav class="space-y-2 flex-1">
+        <button onclick="switchTab('project')" id="btnTabProject" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-white bg-gradient-to-r from-pink-500 to-rose-500 shadow-md shadow-pink-200">
+          <i class="fa-solid fa-diagram-project text-sm"></i> List Project
         </button>
-      </div>
-    </div>
+        <button onclick="switchTab('rework')" id="btnTabRework" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-gray-500 hover:bg-pink-100/50 hover:text-pink-600">
+          <i class="fa-solid fa-file-pen text-sm"></i> List Rework
+        </button>
+      </nav>
+      <button onclick="location.reload()" class="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-pink-600 mt-auto pt-3 border-t border-pink-100">
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar Sistem
+      </button>
+    </aside>
 
-    <!-- MAIN APP CONTAINER -->
-    <div
-      id="appSection"
-      class="hidden h-screen w-full flex flex-col md:flex-row overflow-hidden"
-    >
-      <!-- SIDEBAR -->
-      <aside
-        class="w-full md:w-64 bg-white/90 backdrop-blur-lg border-r border-pink-200 p-5 flex flex-col shadow-xl h-full overflow-y-auto shrink-0"
-      >
-        <div class="flex items-center gap-3 mb-6">
-          <div
-            class="w-10 h-10 bg-gradient-to-tr from-pink-500 to-rose-500 text-white rounded-2xl flex items-center justify-center text-lg font-black shadow-lg shadow-pink-300"
-          >
-            N
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-4 md:p-6 h-full overflow-hidden flex flex-col">
+      <!-- SECTION PROJECT -->
+      <div id="sectionProject" class="space-y-3.5 flex-1 flex flex-col min-h-0">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5 shrink-0">
+          <div onclick="filterProjectStat('ALL')" class="cursor-pointer card-summary-item card-total p-3 text-center shadow-xs">
+            <span class="text-[10px] text-pink-600 font-extrabold uppercase tracking-wider block">Total</span>
+            <span id="statTotal" class="text-2xl font-black text-pink-600 mt-0.5 block">0</span>
           </div>
-          <div>
-            <h1
-              class="font-extrabold text-gray-800 text-base leading-none tracking-tight"
-            >
-              Dashboard Nurul
-            </h1>
-            <span
-              class="text-[10px] text-pink-600 font-semibold uppercase tracking-wider"
-              >Project & Rework</span
-            >
+          <div onclick="filterProjectStat('ON_PROGRESS')" class="cursor-pointer card-summary-item card-progress p-3 text-center shadow-xs">
+            <span class="text-[10px] text-slate-700 font-extrabold uppercase tracking-wider block">On Progress</span>
+            <span id="statOnProgress" class="text-2xl font-black text-slate-700 mt-0.5 block">0</span>
+          </div>
+          <div onclick="filterProjectStat('INTEGRATION')" class="cursor-pointer card-summary-item card-integration p-3 text-center shadow-xs">
+            <span class="text-[10px] text-blue-600 font-extrabold uppercase tracking-wider block">Integration</span>
+            <span id="statIntegration" class="text-2xl font-black text-blue-600 mt-0.5 block">0</span>
+          </div>
+          <div onclick="filterProjectStat('BELUM_UAT1')" class="cursor-pointer card-summary-item card-uat1 p-3 text-center shadow-xs">
+            <span class="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider block">Belum UAT 1</span>
+            <span id="statBelumUat1" class="text-2xl font-black text-amber-600 mt-0.5 block">0</span>
+          </div>
+          <div onclick="filterProjectStat('BELUM_UAT2')" class="cursor-pointer card-summary-item card-uat2 p-3 text-center shadow-xs">
+            <span class="text-[10px] text-orange-600 font-extrabold uppercase tracking-wider block">Belum UAT 2</span>
+            <span id="statBelumUat2" class="text-2xl font-black text-orange-600 mt-0.5 block">0</span>
+          </div>
+          <div onclick="filterProjectStat('BELUM_RILIS')" class="cursor-pointer card-summary-item card-rilis p-3 text-center shadow-xs">
+            <span class="text-[10px] text-purple-600 font-extrabold uppercase tracking-wider block">Belum Rilis</span>
+            <span id="statBelumRilis" class="text-2xl font-black text-purple-600 mt-0.5 block">0</span>
+          </div>
+          <div onclick="filterProjectStat('FINISH')" class="cursor-pointer card-summary-item card-finish p-3 text-center shadow-xs">
+            <span class="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider block">Finish</span>
+            <span id="statFinish" class="text-2xl font-black text-emerald-600 mt-0.5 block">0</span>
           </div>
         </div>
-        <nav class="space-y-2 flex-1">
-          <button
-            onclick="switchTab('project')"
-            id="btnTabProject"
-            class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-white bg-gradient-to-r from-pink-500 to-rose-500 shadow-md shadow-pink-200"
-          >
-            <i class="fa-solid fa-diagram-project text-sm"></i> List Project
-          </button>
-          <button
-            onclick="switchTab('rework')"
-            id="btnTabRework"
-            class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-gray-500 hover:bg-pink-100/50 hover:text-pink-600"
-          >
-            <i class="fa-solid fa-file-pen text-sm"></i> List Rework
-          </button>
-        </nav>
-        <button
-          onclick="location.reload()"
-          class="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-pink-600 mt-auto pt-3 border-t border-pink-100"
-        >
-          <i class="fa-solid fa-right-from-bracket"></i> Keluar Sistem
-        </button>
-      </aside>
 
-      <!-- MAIN CONTENT AREA -->
-      <main class="flex-1 p-4 md:p-6 h-full overflow-hidden flex flex-col">
-        <div
-          id="sectionProject"
-          class="space-y-3.5 flex-1 flex flex-col min-h-0"
-        >
-          <div
-            class="bg-white/90 backdrop-blur-md rounded-2xl border border-pink-200 shadow-xl overflow-hidden flex-1 flex flex-col min-h-0"
-          >
-            <div class="overflow-x-auto overflow-y-auto flex-1 h-full p-4">
-              <h2 class="text-base font-black text-pink-600 mb-4">
-                Memuat Data Project...
-              </h2>
-              <div id="projectTableBody"></div>
+        <div class="flex flex-col md:flex-row justify-between gap-3 items-center bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-pink-200 shadow-sm shrink-0">
+          <div class="flex items-center gap-2.5 w-full md:w-auto">
+            <div class="relative w-full md:w-64">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-pink-400 text-xs"></i>
+              <input type="text" id="searchProject" oninput="renderProjectGrid()" placeholder="Cari Project / SA / Programmer..." class="pl-8 pr-3 py-1.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-pink-500 w-full transition">
             </div>
+            <select id="filterQuartal" onchange="renderProjectGrid()" class="px-3 py-1.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-pink-500">
+              <option value="ALL">Semua Quartal</option>
+            </select>
           </div>
         </div>
-      </main>
-    </div>
 
-    <script>
-      function showFlyingPopup(msg) {
-        const el = document.getElementById("flyingPopup");
-        document.getElementById("flyingPopupMsg").innerText = msg;
-        el.classList.remove("hidden");
-        setTimeout(() => {
-          el.classList.add("hidden");
-        }, 3000);
+        <div class="bg-white/90 backdrop-blur-md rounded-2xl border border-pink-200 shadow-xl overflow-hidden flex-1 flex flex-col min-h-0">
+          <div class="overflow-x-auto overflow-y-auto flex-1 h-full">
+            <table class="w-full text-center text-xs border-collapse">
+              <thead class="bg-gradient-to-r from-pink-100 to-rose-100 border-b border-pink-200 text-gray-700 font-bold uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 shadow-sm">
+                <tr>
+                  <th class="py-3 px-4 text-left bg-pink-100">Project & Tim</th>
+                  <th class="py-3 px-3 text-center bg-pink-100">Status</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Max Int.</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Act Finish Int.</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">UAT 1</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">UAT 2</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Rilis</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Bugs</th>
+                  <th class="py-3 px-3 text-center whitespace-nowrap bg-pink-100">Quartal</th>
+                </tr>
+              </thead>
+              <tbody id="projectTableBody" class="divide-y divide-pink-100/60"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION REWORK -->
+      <div id="sectionRework" class="space-y-3.5 flex-1 flex flex-col min-h-0 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-2.5 shrink-0">
+          <div class="card-summary-item card-total p-3 text-center shadow-xs">
+            <span class="text-[10px] text-pink-600 font-extrabold uppercase tracking-wider">Total List Rework</span>
+            <span id="reworkStatTotal" class="text-2xl font-black text-pink-600 block mt-0.5">0</span>
+          </div>
+          <div class="card-summary-item card-integration p-3 text-center shadow-xs">
+            <span class="text-[10px] text-blue-600 font-extrabold uppercase tracking-wider">Kategori RSD</span>
+            <span id="reworkStatRsd" class="text-2xl font-black text-blue-600 block mt-0.5">0</span>
+          </div>
+          <div class="card-summary-item card-uat1 p-3 text-center shadow-xs">
+            <span class="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider">Kategori SRS</span>
+            <span id="reworkStatSrs" class="text-2xl font-black text-amber-600 block mt-0.5">0</span>
+          </div>
+          <div class="card-summary-item card-rilis p-3 text-center shadow-xs">
+            <span class="text-[10px] text-purple-600 font-extrabold uppercase tracking-wider">Kategori DFD</span>
+            <span id="reworkStatDfd" class="text-2xl font-black text-purple-600 block mt-0.5">0</span>
+          </div>
+          <div class="card-summary-item card-finish p-3 text-center shadow-xs">
+            <span class="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider">Kategori Modul</span>
+            <span id="reworkStatModul" class="text-2xl font-black text-emerald-600 block mt-0.5">0</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between gap-3 items-center bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-pink-200 shadow-sm shrink-0">
+          <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
+            <select id="filterReworkCategory" onchange="renderReworkGrid()" class="px-3 py-1.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-pink-500">
+              <option value="ALL">Semua Kategori</option>
+              <option value="RSD">RSD</option>
+              <option value="SRS">SRS</option>
+              <option value="DFD">DFD</option>
+              <option value="Modul">Modul</option>
+            </select>
+            <select id="filterReworkSemester" onchange="renderReworkGrid()" class="px-3 py-1.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-pink-500">
+              <option value="ALL">Semua Semester</option>
+              <option value="S1">Semester 1 (Jan-Jun)</option>
+              <option value="S2">Semester 2 (Jul-Des)</option>
+            </select>
+            <select id="filterReworkYear" onchange="renderReworkGrid()" class="px-3 py-1.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-pink-500">
+              <option value="ALL">Semua Tahun</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur-md rounded-2xl border border-pink-200 shadow-xl overflow-hidden flex-1 flex flex-col min-h-0">
+          <div class="overflow-x-auto overflow-y-auto flex-1 h-full">
+            <table class="w-full text-center text-sm border-collapse">
+              <thead class="bg-gradient-to-r from-pink-100 to-rose-100 border-b border-pink-200 text-gray-700 font-bold uppercase tracking-wider text-xs whitespace-nowrap sticky top-0 z-10 shadow-sm">
+                <tr>
+                  <th class="py-3 px-4 text-center bg-pink-100">Tanggal</th>
+                  <th class="py-3 px-4 text-center bg-pink-100">SSID</th>
+                  <th class="py-3 px-3 text-center bg-pink-100">Kategori</th>
+                  <th class="py-3 px-4 text-center bg-pink-100">Note</th>
+                  <th class="py-3 px-4 text-center bg-pink-100">PIC</th>
+                </tr>
+              </thead>
+              <tbody id="reworkTableBody" class="divide-y divide-pink-100/60"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let rawProjectData = [];
+    let rawReworkData = [];
+    let activeStatFilter = 'ALL';
+
+    function showFlyingPopup(msg) {
+      const el = document.getElementById('flyingPopup');
+      document.getElementById('flyingPopupMsg').innerText = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => { el.classList.add('hidden'); }, 3000);
+    }
+
+    function handleLogin() {
+      const pin = document.getElementById('pinInput').value;
+      if (!pin) {
+        showFlyingPopup("Password Masih Kosong");
+        return;
       }
 
-      function handleLogin() {
-        const pin = document.getElementById("pinInput").value;
-        if (!pin) {
-          showFlyingPopup("Password Masih Kosong");
-          return;
+      fetch(`${WEB_APP_URL}?action=verifyPassword&pin=${encodeURIComponent(pin)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            initData();
+          } else {
+            showFlyingPopup("Password Salah Pendek");
+          }
+        })
+        .catch(err => {
+          showFlyingPopup("Gagal terhubung ke server database!");
+        });
+    }
+
+    function getCurrentQuartalAndYear() {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = String(now.getFullYear()).slice(-2);
+      let q = 'Q1';
+      if (month >= 4 && month <= 6) q = 'Q2';
+      else if (month >= 7 && month <= 9) q = 'Q3';
+      else if (month >= 10 && month <= 12) q = 'Q4';
+      return { q, year, full: `${q}-${year}` };
+    }
+
+    function initData() {
+      loadProjectData();
+      loadReworkData();
+    }
+
+    function switchTab(tab) {
+      if (tab === 'project') {
+        document.getElementById('sectionProject').classList.remove('hidden');
+        document.getElementById('sectionRework').classList.add('hidden');
+        document.getElementById('btnTabProject').className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-white bg-gradient-to-r from-pink-500 to-rose-500 shadow-md shadow-pink-200";
+        document.getElementById('btnTabRework').className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-gray-500 hover:bg-pink-100/50 hover:text-pink-600";
+      } else {
+        document.getElementById('sectionProject').classList.add('hidden');
+        document.getElementById('sectionRework').classList.remove('hidden');
+        document.getElementById('btnTabRework').className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-white bg-gradient-to-r from-pink-500 to-rose-500 shadow-md shadow-pink-200";
+        document.getElementById('btnTabProject').className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all text-gray-500 hover:bg-pink-100/50 hover:text-pink-600";
+      }
+    }
+
+    function displayDate(isoDateStr) {
+      if (!isoDateStr) return '-';
+      const parts = isoDateStr.split('-');
+      if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      return isoDateStr;
+    }
+
+    function parseLocalDate(dateStr) {
+      if (!dateStr) return null;
+      const parts = dateStr.split('-');
+      if (parts.length === 3) return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      return new Date(dateStr);
+    }
+
+    function parseQuartalValue(quartalStr) {
+      if (!quartalStr) return 999999;
+      const parts = quartalStr.split('-');
+      if (parts.length === 2) {
+        return (parseInt(parts[1]) * 10) + (parseInt(parts[0].replace('Q', '')) || 0);
+      }
+      return 999999;
+    }
+
+    function loadProjectData() {
+      fetch(`${WEB_APP_URL}?action=getProjectData`)
+        .then(res => res.json())
+        .then(data => {
+          rawProjectData = data;
+          populateQuartalFilterOptions();
+          updateProjectStats();
+          updateActiveCardVisual();
+          renderProjectGrid();
+        })
+        .catch(err => console.error("Gagal load project:", err));
+    }
+
+    function populateQuartalFilterOptions() {
+      const qSelect = document.getElementById('filterQuartal');
+      const currentQuartal = getCurrentQuartalAndYear().full;
+      let uniqueQuartals = [...new Set(rawProjectData.map(p => p.quartal).filter(Boolean))];
+      if (!uniqueQuartals.includes(currentQuartal)) uniqueQuartals.push(currentQuartal);
+      uniqueQuartals.sort((a, b) => parseQuartalValue(a) - parseQuartalValue(b));
+
+      qSelect.innerHTML = `<option value="ALL">Semua Quartal</option>`;
+      uniqueQuartals.forEach(q => { qSelect.innerHTML += `<option value="${q}">${q}</option>`; });
+      qSelect.value = currentQuartal;
+    }
+
+    function getProjectStatus(p) {
+      if (p.maxIntegration && p.actFinishIntegration && p.uat1 && (p.hasUat2 ? p.uat2 : true) && p.rilis) return 'FINISH';
+      if (p.hasUat2 && p.uat1 && !p.uat2) return 'BELUM_UAT2';
+      if ((p.uat1 || p.uat2) && !p.rilis) return 'BELUM_RILIS';
+      if (p.actFinishIntegration && !p.uat1) return 'BELUM_UAT1';
+      if (p.maxIntegration && !p.actFinishIntegration) return 'INTEGRATION';
+      return 'ON_PROGRESS';
+    }
+
+    function updateProjectStats() {
+      let stats = { ALL: rawProjectData.length, ON_PROGRESS: 0, INTEGRATION: 0, BELUM_UAT1: 0, BELUM_UAT2: 0, BELUM_RILIS: 0, FINISH: 0 };
+      rawProjectData.forEach(p => {
+        const st = getProjectStatus(p);
+        if (stats[st] !== undefined) stats[st]++;
+      });
+      document.getElementById('statTotal').innerText = stats.ALL;
+      document.getElementById('statOnProgress').innerText = stats.ON_PROGRESS;
+      document.getElementById('statIntegration').innerText = stats.INTEGRATION;
+      document.getElementById('statBelumUat1').innerText = stats.BELUM_UAT1;
+      document.getElementById('statBelumUat2').innerText = stats.BELUM_UAT2;
+      document.getElementById('statBelumRilis').innerText = stats.BELUM_RILIS;
+      document.getElementById('statFinish').innerText = stats.FINISH;
+    }
+
+    function filterProjectStat(stat) {
+      activeStatFilter = (activeStatFilter === stat && stat !== 'ALL') ? 'ALL' : stat;
+      updateActiveCardVisual();
+      renderProjectGrid();
+    }
+
+    function updateActiveCardVisual() {
+      const cards = {
+        'ALL': document.querySelector('.card-total'),
+        'ON_PROGRESS': document.querySelector('.card-progress'),
+        'INTEGRATION': document.querySelector('.card-integration'),
+        'BELUM_UAT1': document.querySelector('.card-uat1'),
+        'BELUM_UAT2': document.querySelector('.card-uat2'),
+        'BELUM_RILIS': document.querySelector('.card-rilis'),
+        'FINISH': document.querySelector('.card-finish')
+      };
+      Object.keys(cards).forEach(key => {
+        const cardEl = cards[key];
+        if (!cardEl) return;
+        if (activeStatFilter === key) {
+          cardEl.classList.add('active-card');
+          cardEl.classList.remove('card-inactive');
+        } else {
+          cardEl.classList.remove('active-card');
+          if (activeStatFilter !== 'ALL') cardEl.classList.add('card-inactive');
+          else cardEl.classList.remove('card-inactive');
+        }
+      });
+    }
+
+    function renderProjectGrid() {
+      const search = document.getElementById('searchProject').value.toLowerCase();
+      const qFilter = document.getElementById('filterQuartal').value;
+
+      let filtered = rawProjectData.filter(p => {
+        const matchesSearch = p.projectName.toLowerCase().includes(search) || p.sa.toLowerCase().includes(search) || p.programmer.toLowerCase().includes(search);
+        const matchesQ = qFilter === 'ALL' || p.quartal === qFilter;
+        const matchesStat = activeStatFilter === 'ALL' || getProjectStatus(p) === activeStatFilter;
+        return matchesSearch && matchesQ && matchesStat;
+      });
+
+      const todayObj = new Date();
+      const today = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
+
+      filtered.sort((a, b) => {
+        if (qFilter === 'ALL') {
+          const qValA = parseQuartalValue(a.quartal);
+          const qValB = parseQuartalValue(b.quartal);
+          if (qValA !== qValB) return qValA - qValB;
+        }
+        const order = { 'INTEGRATION': 1, 'BELUM_UAT1': 2, 'BELUM_UAT2': 2, 'BELUM_RILIS': 3, 'ON_PROGRESS': 4, 'FINISH': 5 };
+        const stA = getProjectStatus(a);
+        const stB = getProjectStatus(b);
+        if (order[stA] !== order[stB]) return order[stA] - order[stB];
+        return 0;
+      });
+
+      const tbody = document.getElementById('projectTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-gray-400 font-semibold"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> Tidak ada data project.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(p => {
+        const status = getProjectStatus(p);
+        let badgeHtml = '';
+        if (status === 'INTEGRATION') badgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-blue-100 text-blue-700 border border-blue-200 blink-status"><i class="fa-solid fa-gears"></i> INTEGRATION</span>`;
+        else if (status === 'BELUM_UAT1') badgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 blink-status"><i class="fa-solid fa-flask"></i> BELUM UAT 1</span>`;
+        else if (status === 'BELUM_UAT2') badgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-orange-100 text-orange-800 border border-orange-200 blink-status"><i class="fa-solid fa-flask"></i> BELUM UAT 2</span>`;
+        else if (status === 'BELUM_RILIS') badgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-purple-100 text-purple-700 border border-purple-200 blink-status"><i class="fa-solid fa-rocket"></i> BELUM RILIS</span>`;
+        else if (status === 'FINISH') badgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-circle-check"></i> FINISH</span>`;
+        else badgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-solid fa-spinner"></i> ON PROGRESS</span>`;
+
+        let actFinishCellHtml = displayDate(p.actFinishIntegration);
+        if (status === 'INTEGRATION' && !p.actFinishIntegration && p.maxIntegration) {
+          const maxD = parseLocalDate(p.maxIntegration);
+          const diff = Math.round((maxD - today) / (1000 * 60 * 60 * 24));
+          actFinishCellHtml = diff < 0 ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-100 px-2 py-1 rounded border border-red-200 blink-status inline-block">Overdue ${Math.abs(diff)} hr</span>` : `<span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200 blink-status inline-block">Sisa ${diff} hr</span>`;
         }
 
-        fetch(
-          `${WEB_APP_URL}?action=verifyPassword&pin=${encodeURIComponent(pin)}`,
-        )
-          .then((res) => res.json())
-          .then((res) => {
-            if (res.success) {
-              document.getElementById("loginSection").classList.add("hidden");
-              document.getElementById("appSection").classList.remove("hidden");
-              loadDataFromSpreadsheet();
-            } else {
-              showFlyingPopup("Password Salah Pendek");
-            }
-          })
-          .catch((err) => {
-            showFlyingPopup("Gagal terhubung ke server database!");
-          });
+        let uat1CellHtml = displayDate(p.uat1);
+        if (status === 'BELUM_UAT1' && !p.uat1 && p.actFinishIntegration) {
+          const passDays = Math.round((today - parseLocalDate(p.actFinishIntegration)) / (1000 * 60 * 60 * 24));
+          uat1CellHtml = `<span class="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200 blink-status inline-block">${Math.abs(passDays)} hr</span>`;
+        }
+
+        let uat2CellHtml = p.hasUat2 ? displayDate(p.uat2) : '<span class="text-gray-300 font-normal">N/A</span>';
+        if (status === 'BELUM_UAT2' && p.hasUat2 && !p.uat2 && p.uat1) {
+          const passDays = Math.round((today - parseLocalDate(p.uat1)) / (1000 * 60 * 60 * 24));
+          uat2CellHtml = `<span class="text-[10px] font-extrabold text-orange-700 bg-orange-50 px-2 py-1 rounded border border-orange-200 blink-status inline-block">${Math.abs(passDays)} hr</span>`;
+        }
+
+        const bugDisplay = p.listBugs ? `<a href="${p.listBugs}" target="_blank" class="w-7 h-7 inline-flex items-center justify-center text-pink-600 bg-pink-100 hover:bg-pink-500 hover:text-white rounded-full transition-all shadow-xs" title="Buka Bugs Link"><i class="fa-solid fa-bug text-xs"></i></a>` : '<span class="text-gray-300">-</span>';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-pink-100/40 transition-all">
+            <td class="py-3 px-4 text-left">
+              <div class="font-black text-gray-900 text-sm tracking-tight mb-1.5">${p.projectName}</div>
+              <div class="text-[11px] text-gray-600 flex items-center gap-1.5 flex-wrap font-medium uppercase">
+                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200/80">SA: <strong class="text-gray-800 font-bold">${p.sa}</strong></span>
+                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200/80">Prog: <strong class="text-gray-800 font-bold">${p.programmer}</strong></span>
+                <span class="bg-white/80 px-1.5 py-0.5 rounded border border-pink-200/80">QA: <strong class="text-pink-600 font-bold">${p.qa}</strong></span>
+              </div>
+            </td>
+            <td class="py-3 px-3 text-center whitespace-nowrap">${badgeHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${displayDate(p.maxIntegration)}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${actFinishCellHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${uat1CellHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${uat2CellHtml}</td>
+            <td class="py-3 px-3 font-semibold text-gray-700 text-center whitespace-nowrap">${displayDate(p.rilis)}</td>
+            <td class="py-3 px-3 text-center whitespace-nowrap">${bugDisplay}</td>
+            <td class="py-3 px-3 text-center whitespace-nowrap">
+              <span class="font-extrabold text-[11px] text-pink-600 bg-pink-100 px-2.5 py-0.5 rounded-lg border border-pink-200/80 shadow-xs inline-block">${p.quartal}</span>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function loadReworkData() {
+      fetch(`${WEB_APP_URL}?action=getReworkData`)
+        .then(res => res.json())
+        .then(data => {
+          rawReworkData = data;
+          updateReworkStats();
+          renderReworkGrid();
+        })
+        .catch(err => console.error("Gagal load rework:", err));
+    }
+
+    function updateReworkStats() {
+      let stats = { TOTAL: rawReworkData.length, RSD: 0, SRS: 0, DFD: 0, Modul: 0 };
+      rawReworkData.forEach(r => { if (stats[r.kategori] !== undefined) stats[r.kategori]++; });
+      document.getElementById('reworkStatTotal').innerText = stats.TOTAL;
+      document.getElementById('reworkStatRsd').innerText = stats.RSD;
+      document.getElementById('reworkStatSrs').innerText = stats.SRS;
+      document.getElementById('reworkStatDfd').innerText = stats.DFD;
+      document.getElementById('reworkStatModul').innerText = stats.Modul;
+    }
+
+    function renderReworkGrid() {
+      const cat = document.getElementById('filterReworkCategory').value;
+      const sem = document.getElementById('filterReworkSemester').value;
+      const yr = document.getElementById('filterReworkYear').value;
+
+      let filtered = rawReworkData.filter(r => {
+        const matchesCat = cat === 'ALL' || r.kategori === cat;
+        let matchesSem = true;
+        if (r.tanggal && sem !== 'ALL') {
+          const month = parseLocalDate(r.tanggal).getMonth() + 1;
+          if (sem === 'S1') matchesSem = month >= 1 && month <= 6;
+          if (sem === 'S2') matchesSem = month >= 7 && month <= 12;
+        }
+        let matchesYr = true;
+        if (r.tanggal && yr !== 'ALL') matchesYr = parseLocalDate(r.tanggal).getFullYear().toString() === yr;
+        return matchesCat && matchesSem && matchesYr;
+      });
+
+      const tbody = document.getElementById('reworkTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-400 font-semibold"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> Tidak ada data rework.</td></tr>`;
+        return;
       }
 
-      function loadDataFromSpreadsheet() {
-        fetch(`${WEB_APP_URL}?action=getProjectData`)
-          .then((res) => res.json())
-          .then((data) => {
-            console.log("Data Project:", data);
-            // Di sini data project siap dirender ke tabel kamu
-          });
-      }
-
-      function switchTab(tab) {
-        // Logika switch tab aktif
-      }
-    </script>
-  </body>
+      filtered.forEach(r => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-pink-100/40 transition-all">
+            <td class="py-3 px-4 font-bold text-gray-700 text-center text-xs whitespace-nowrap">${displayDate(r.tanggal)}</td>
+            <td class="py-3 px-4 font-extrabold text-pink-600 text-center text-xs whitespace-nowrap">${r.ssid}</td>
+            <td class="py-3 px-3 text-center whitespace-nowrap">
+              <span class="text-[11px] font-black bg-pink-100 text-pink-700 px-3 py-1 rounded-full border border-pink-200 inline-block">${r.kategori}</span>
+            </td>
+            <td class="py-3 px-4 max-w-xs truncate text-gray-700 font-medium text-center text-xs" title="${r.note}">${r.note}</td>
+            <td class="py-3 px-4 font-extrabold text-gray-800 text-center text-xs whitespace-nowrap uppercase">${r.pic}</td>
+          </tr>
+        `;
+      });
+    }
+  </script>
+</body>
 </html>
